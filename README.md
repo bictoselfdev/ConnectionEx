@@ -1,6 +1,6 @@
 # ConnectionEx
 
-Connector 모듈을 활용한 네트워크 및 시리얼 톹신 예제입니다.
+Connector 모듈을 활용한 네트워크 및 시리얼 통신 예제입니다.
 Connector 모듈은 아래 기능들을 가집니다.
  - WiFi 소켓통신
  - USB 소켓통신
