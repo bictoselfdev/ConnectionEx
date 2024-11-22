@@ -1,7 +1,9 @@
 package com.example.connector.bluetooth
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
 import android.util.Log
 import com.example.connector.common.ConnectionHandler
@@ -12,25 +14,46 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.UUID
 
-class ConnectionBT(private val bluetoothDevice: BluetoothDevice) : ConnectionHandler {
+class ConnectionBT(private val bluetoothDevice: BluetoothDevice? = null) : ConnectionHandler {
     private var bluetoothSocket: BluetoothSocket? = null
+    private var serverSocket: BluetoothServerSocket? = null
     private var inputStream: InputStream? = null
     private var outputStream: OutputStream? = null
 
+    private var uuid = "00001101-0000-1000-8000-00805F9B34FB" // SPP
+
+    @SuppressLint("MissingPermission")
     override suspend fun connect(): Boolean = withContext(Dispatchers.IO) {
         try {
-            bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")) // SPP
-            BluetoothAdapter.getDefaultAdapter().cancelDiscovery()  // 연결 전 디스커버리 중지
-
+            bluetoothSocket = bluetoothDevice?.createRfcommSocketToServiceRecord(UUID.fromString(uuid))
+            BluetoothAdapter.getDefaultAdapter().cancelDiscovery()
             bluetoothSocket?.connect()
             inputStream = bluetoothSocket?.inputStream
             outputStream = bluetoothSocket?.outputStream
 
-            Log.d("Connector(BT)", "Connected to ${bluetoothDevice.name}")
+            Log.d("Connector(BT)", "Connected in CLIENT")
             true
         } catch (e: IOException) {
             e.printStackTrace()
-            disconnect()  // 연결 실패 시 소켓 닫기
+            disconnect()
+            false
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    suspend fun listen(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            serverSocket = BluetoothAdapter.getDefaultAdapter()
+                .listenUsingRfcommWithServiceRecord("MyBluetoothApp", UUID.fromString(uuid))
+            bluetoothSocket = serverSocket?.accept()
+            inputStream = bluetoothSocket?.inputStream
+            outputStream = bluetoothSocket?.outputStream
+
+            Log.d("Connector(BT)", "Connected in SERVER")
+            true
+        } catch (e: IOException) {
+            e.printStackTrace()
+            disconnect()
             false
         }
     }
@@ -40,9 +63,11 @@ class ConnectionBT(private val bluetoothDevice: BluetoothDevice) : ConnectionHan
             inputStream?.close()
             outputStream?.close()
             bluetoothSocket?.close()
+            serverSocket?.close()
             inputStream = null
             outputStream = null
             bluetoothSocket = null
+            serverSocket = null
 
             Log.d("Connector(BT)", "Disconnected from Bluetooth")
         } catch (e: IOException) {

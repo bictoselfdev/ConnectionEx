@@ -146,10 +146,16 @@
                     android:gravity="center" />
 
                 <Button
+                    android:id="@+id/btnBluetoothListen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="오픈(서버)" />
+
+                <Button
                     android:id="@+id/btnBluetoothConnect"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="연결" />
+                    android:text="연결(클라)" />
             </LinearLayout>
         </LinearLayout>
 

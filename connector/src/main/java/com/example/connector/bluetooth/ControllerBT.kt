@@ -12,6 +12,13 @@ class ControllerBT : BaseController() {
         return startConnection()
     }
 
+    suspend fun listenTo(): Boolean {
+        connectionBT = ConnectionBT()
+        return connectionBT!!.listen().also { isConnected ->
+            if (isConnected) connectionType = ConnectionType.BT
+        }
+    }
+
     override suspend fun connect(): Boolean {
         return (connectionBT?.connect() ?: false).also { isConnected ->
             if (isConnected) connectionType = ConnectionType.BT

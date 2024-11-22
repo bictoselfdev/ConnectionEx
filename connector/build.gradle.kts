@@ -38,5 +38,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
 
     // Serial
-    implementation(libs.usb.serial)
+    //implementation(libs.usb.serial)
+
+    // Serial
+    implementation("com.github.mik3y:usb-serial-for-android:3.8.0")
 }

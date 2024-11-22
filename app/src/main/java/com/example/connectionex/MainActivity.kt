@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -108,6 +109,10 @@ class MainActivity : AppCompatActivity() {
             tryConnectToUSB()
         }
 
+        binding.btnBluetoothListen.setOnClickListener {
+            listenBT()
+        }
+
         binding.btnBluetoothConnect.setOnClickListener {
             tryConnectToBT()
         }
@@ -156,6 +161,16 @@ class MainActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    private fun listenBT() {
+        CoroutineScope(Dispatchers.IO).launch {
+            updateLogView("[Bluetooth Socket] Listening for connections...\n")
+            if (controllerBT.listenTo()) {
+                updateLogView("[Bluetooth Socket] Connected!\n")
+                startReceivingData(controllerBT)
+            }
         }
     }
 
@@ -274,10 +289,10 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("MissingPermission")
     private fun handleBluetoothDevice(intent: Intent) {
         val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, BluetoothDevice::class.java)
+            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getParcelableExtra(UsbManager.EXTRA_DEVICE) as BluetoothDevice?
+            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) as BluetoothDevice?
         }
 
         device?.let {
